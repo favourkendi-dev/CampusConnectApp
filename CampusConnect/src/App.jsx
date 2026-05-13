@@ -1,122 +1,141 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { useEffect } from 'react';
 
-function App() {
-  const [count, setCount] = useState(0)
+// Components & Pages
+import Navbar from './components/Navbar';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Profile from './pages/Profile';
+import Chat from './pages/Chat';
+import Explore from './pages/Explore';
+import NotFound from './pages/NotFound';
+import LoadingSpinner from './components/LoadingSpinner';
+import ChatMessage from './components/ChatMessage';
+import PostCard from './components/PostCard';
+import UserList from './components/UserList';
+
+// Contexts & Hooks
+//import { useOffline } from './hooks/useOffline';
+//import { useTheme } from './context/ThemeContext';
+//import { useNotification } from './context/NotificationContext';
+//import { useWebSocket } from './hooks/useWebSocket';
+//import { useIdleTimer } from './hooks/useIdleTimer';
+//import { useErrorBoundary } from './hooks/useErrorBoundary';
+//import { useAnalytics } from './hooks/useAnalytics';
+//import { usePerformanceMonitor } from './hooks/usePerformanceMonitor';
+//import { useAccessibility } from './hooks/useAccessibility';
+//import { useLocalization } from './hooks/useLocalization';
+//import { useUserPreferences } from './hooks/useUserPreferences';
+//import { useDataFetching } from './hooks/useDataFetching';
+//import { useFormValidation } from './hooks/useFormValidation';
+//import { useInfiniteScroll } from './hooks/useInfiniteScroll';  
+//import { useDebounce } from './hooks/useDebounce';
+//import { useThrottle } from './hooks/useThrottle';
+//import { useDarkMode } from './hooks/useDarkMode';
+//import { useMediaQuery } from './hooks/useMediaQuery';
+//import { useLocalStorage } from './hooks/useLocalStorage';
+//import { useSessionStorage } from './hooks/useSessionStorage';
+//import { useEventListener } from './hooks/useEventListener';
+//import { useOnClickOutside } from './hooks/useOnClickOutside';
+//import { useHover } from './hooks/useHover';
+//import { useFocus } from './hooks/useFocus';
+//import { useScrollPosition } from './hooks/useScrollPosition';
+//import { useWindowSize } from './hooks/useWindowSize';
+//import { useDocumentTitle } from './hooks/useDocumentTitle';
+//import { usePrevious } from './hooks/usePrevious';
+//import { useToggle } from './hooks/useToggle';
+//import { useCounter } from './hooks/useCounter';
+//import { useArray } from './hooks/useArray';
+//import { useObject } from './hooks/useObject';
+//import { useMap } from './hooks/useMap';
+//import { useSet } from './hooks/useSet';
+//import { useTimeout } from './hooks/useTimeout';
+//import { useInterval } from './hooks/useInterval';
+//import { useAsync } from './hooks/useAsync';
+//import { usePromise } from './hooks/usePromise';
+//import { useFetch } from './hooks/useFetch';
+//import { useWebWorker } from './hooks/useWebWorker';
+//import { useVirtualList } from './hooks/useVirtualList';
+//import { useGesture } from './hooks/useGesture';
+//import { useDragAndDrop } from './hooks/useDragAndDrop';
+//import { useResizeObserver } from './hooks/useResizeObserver';
+//import { useMutationObserver } from './hooks/useMutationObserver';
+//import { useIntersectionObserver } from './hooks/useIntersectionObserver';
+//import { useIdle } from './hooks/useIdle';
+//import { useOnlineStatus } from './hooks/useOnlineStatus';
+//import { usePageVisibility } from './hooks/usePageVisibility';
+//import { usePrefersReducedMotion } from './hooks/usePrefersReducedMotion';
+//import { usePrefersColorScheme } from './hooks/usePrefersColorScheme';
+//import { usePrefersContrast } from './hooks/usePrefersContrast';
+//import { usePrefersDarkMode } from './hooks/usePrefersDarkMode';
+//import { usePrefersLightMode } from './hooks/usePrefersLightMode';
+//import { usePrefersSystemTheme } from './hooks/usePrefersSystemTheme';
+//import { usePrefersReducedData } from './hooks/usePrefersReducedData';
+//import { usePrefersReducedMotionFallback } from './hooks/usePrefersReducedMotionFallback';
+//import { usePrefersColorSchemeFallback } from './hooks/usePrefersColorSchemeFallback';
+//import { usePrefersContrastFallback } from './hooks/usePrefersContrastFallback';
+//import { usePrefersDarkModeFallback } from './hooks/usePrefersDarkModeFallback';
+//import { usePrefersLightModeFallback } from './hooks/usePrefersLightModeFallback';
+//import { usePrefersSystemThemeFallback } from './hooks/usePrefersSystemThemeFallback';
+//import { usePrefersReducedDataFallback } from './hooks/usePrefersReducedDataFallback';
+//import { useMedia } from './hooks/useMedia';
+//import { useNetworkStatus } from './hooks/useNetworkStatus';
+//import { useBatteryStatus } from './hooks/useBatteryStatus';
+//import { useGeolocation } from './hooks/useGeolocation';
+//import { useDeviceOrientation } from './hooks/useDeviceOrientation';
+//import { useDeviceMotion } from './hooks/useDeviceMotion';
+//import { useSpeechRecognition } from './hooks/useSpeechRecognition';    
+//import { useSpeechSynthesis } from './hooks/useSpeechSynthesis';
+//import { useClipboard } from './hooks/useClipboard';
+
+/**
+ * Route Guard Logic - Cleaned up to avoid duplicating the LoadingSpinner check
+ */
+const RouteGuard = ({ children, isPrivate }) => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) return <LoadingSpinner fullScreen />;
+  
+  if (isPrivate) {
+    return isAuthenticated ? children : <Navigate to="/login" replace />;
+  }
+  return !isAuthenticated ? children : <Navigate to="/" replace />;
+};
+
+const PrivateRoute = ({ children }) => <RouteGuard isPrivate>{children}</RouteGuard>;
+const PublicRoute = ({ children }) => <RouteGuard isPrivate={false}>{children}</RouteGuard>;
+
+const AppContent = () => {
+  const { isAuthenticated } = useAuth();
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="min-h-screen bg-gray-50">
+      {isAuthenticated && <Navbar />}
+      <main>
+        <Routes>
+          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+          <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
+          <Route path="/profile/:userId?" element={<PrivateRoute><Profile /></PrivateRoute>} />
+          <Route path="/chat" element={<PrivateRoute><Chat /></PrivateRoute>} />
+          <Route path="/explore" element={<PrivateRoute><Explore /></PrivateRoute>} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+    </div>
+  );
+};
 
-      <div className="ticks"></div>
+const App = () => {
+  return (
+    <AuthProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </AuthProvider>
+  );
+};
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
-}
-
-export default App
+export default App;
