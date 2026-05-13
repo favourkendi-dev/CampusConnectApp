@@ -1,5 +1,5 @@
 import { AlertTriangle, X, Phone, MapPin, ExternalLink } from 'lucide-react';
-import { useEmergency } from '../context/EmergencyContext';
+import { useEmergency } from '../../context/EmergencyContext';
 
 const EmergencyBanner = () => {
   const { activeAlert, dismissAlert } = useEmergency();

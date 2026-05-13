@@ -81,3 +81,5 @@ export const CloudinaryImage = ({ publicId, alt, className }) => {
     />
   );
 };
+
+export default ImageUpload;

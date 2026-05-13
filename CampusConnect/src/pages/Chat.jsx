@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useChat } from '../hooks/useChat';
 import { db, collection, getDocs } from '../firebase/config';
-import UserList from '../components/UserList';
-import ChatWindow from '../components/ChatWindow';
-import LoadingSpinner from '../components/LoadingSpinner';
+import UserList from '../components/profile/UserList';
+import ChatWindow from '../components/chat/ChatWindow';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 const Chat = () => {
   const { user } = useAuth();

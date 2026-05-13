@@ -2,8 +2,46 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { useEffect } from 'react';
 
-// Components & Pages
-import Navbar from './components/Navbar';
+import {
+  AccessibilityMenu,
+  AchievementBadge,
+  AnonymousPost,
+  ChatMessage,
+  ChatWindow,
+  ConfirmModal,
+  CountdownTimer,
+  CourseCard,
+  CreatePost,
+  DarkModeToggle,
+  DiningHallCard,
+  EmergencyBanner,
+  EventCard,
+  GroupCard,
+  ImageGallery,
+  ImageUpload,
+  InfiniteScroll,
+  LanguageSelector,
+  LeaderboardRow,
+  LoadingSpinner,
+  LostFoundCard,
+  MapPin,
+  MarketplaceItem,
+  Navbar,
+  NoteCard,
+  NotificationItem,
+  PollWidget,
+  PostCard,
+  ProfessorCard,
+  ProfileCard,
+  ReactionBar,
+  SearchFilter,
+  SkeletonLoader,
+  SortDropdown,
+  StoryRing,
+  StudyGroupCard,
+  TutorCard,
+  UserList,
+} from "./components";
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -11,10 +49,6 @@ import Profile from './pages/Profile';
 import Chat from './pages/Chat';
 import Explore from './pages/Explore';
 import NotFound from './pages/NotFound';
-import LoadingSpinner from './components/LoadingSpinner';
-import ChatMessage from './components/ChatMessage';
-import PostCard from './components/PostCard';
-import UserList from './components/UserList';
 
 // Contexts & Hooks
 //import { useOffline } from './hooks/useOffline';
@@ -90,9 +124,7 @@ import UserList from './components/UserList';
 //import { useSpeechSynthesis } from './hooks/useSpeechSynthesis';
 //import { useClipboard } from './hooks/useClipboard';
 
-/**
- * Route Guard Logic - Cleaned up to avoid duplicating the LoadingSpinner check
- */
+
 const RouteGuard = ({ children, isPrivate }) => {
   const { isAuthenticated, loading } = useAuth();
 
@@ -113,13 +145,13 @@ const AppContent = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {isAuthenticated && <Navbar />}
+
       <main>
         <Routes>
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
           <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
           <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
           <Route path="/profile/:userId?" element={<PrivateRoute><Profile /></PrivateRoute>} />
-          <Route path="/chat" element={<PrivateRoute><Chat /></PrivateRoute>} />
           <Route path="/explore" element={<PrivateRoute><Explore /></PrivateRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>

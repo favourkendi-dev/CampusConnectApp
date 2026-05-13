@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { db, collection, getDocs, query, orderBy, limit } from '../firebase/config';
 import { Link } from 'react-router-dom';
 import { Search, TrendingUp, Hash } from 'lucide-react';
-import LoadingSpinner from '../components/LoadingSpinner';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 const Explore = () => {
   const [users, setUsers] = useState([]);

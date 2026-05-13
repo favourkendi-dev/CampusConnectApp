@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { ImageUpload } from './ImageUpload';
+import { useAuth } from '../../context/AuthContext';
+import { ImageUpload } from '../ui/ImageUpload';
 import { Image, X, Send } from 'lucide-react';
 
 const CreatePost = ({ onSubmit }) => {

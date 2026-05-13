@@ -1,9 +1,9 @@
 import { useRef, useEffect } from 'react';
-import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
-import LoadingSpinner from './LoadingSpinner';
+//import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
+import LoadingSpinner from '../ui/LoadingSpinner';
 
 const InfiniteScroll = ({ children, fetchMore, hasMore, threshold = 100 }) => {
-  const { isLoading } = useInfiniteScroll(fetchMore, hasMore, threshold);
+  //const { isLoading } = useInfiniteScroll(fetchMore, hasMore, threshold);
   const loaderRef = useRef(null);
 
   useEffect(() => {

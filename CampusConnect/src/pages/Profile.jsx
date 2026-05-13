@@ -1,9 +1,9 @@
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useUserProfile, useUserPosts } from '../hooks/useFirestore';
-import ProfileCard from '../components/ProfileCard';
-import PostCard from '../components/PostCard';
-import LoadingSpinner from '../components/LoadingSpinner';
+import ProfileCard from '../components/profile/ProfileCard';
+import PostCard from '../components/social/PostCard';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { usePosts } from '../hooks/useFirestore';
 
 const Profile = () => {

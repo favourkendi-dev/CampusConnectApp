@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Accessibility, Type, Contrast, Eye, Volume2, Keyboard } from 'lucide-react';
-import { useAccessibility } from '../hooks/useAccessibility';
+//import { useAccessibility } from '../hooks/useAccessibility';
 
 const AccessibilityMenu = () => {
   const [isOpen, setIsOpen] = useState(false);

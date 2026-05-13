@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { useAuth as useAuthActions } from '../hooks/useAuth';
+import { useAuth } from '../../context/AuthContext';
+import { useAuth as useAuthActions } from '../../hooks/useAuth';
 import { useState } from 'react';
 import { Home, MessageCircle, User, Search, LogOut, Menu, X, Bell } from 'lucide-react';
 

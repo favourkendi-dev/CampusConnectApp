@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { Heart, ThumbsUp, Laugh, Frown, Celebration, Lightbulb } from 'lucide-react';
+import { Heart, ThumbsUp, Laugh, Frown, PartyPopper, Lightbulb } from 'lucide-react';
 
 const REACTIONS = [
   { id: 'like', icon: ThumbsUp, color: 'text-blue-500', bg: 'bg-blue-50', label: 'Like' },
   { id: 'love', icon: Heart, color: 'text-red-500', bg: 'bg-red-50', label: 'Love' },
   { id: 'laugh', icon: Laugh, color: 'text-yellow-500', bg: 'bg-yellow-50', label: 'Haha' },
   { id: 'sad', icon: Frown, color: 'text-gray-500', bg: 'bg-gray-50', label: 'Sad' },
-  { id: 'celebrate', icon: Celebration, color: 'text-purple-500', bg: 'bg-purple-50', label: 'Celebrate' },
+  { id: 'partypopper', icon: PartyPopper, color: 'text-purple-500', bg: 'bg-purple-50', label: 'Celebrate' },
   { id: 'insightful', icon: Lightbulb, color: 'text-accent-500', bg: 'bg-accent-50', label: 'Insightful' },
 ];
 

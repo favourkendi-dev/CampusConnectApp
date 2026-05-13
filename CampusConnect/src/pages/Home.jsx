@@ -1,8 +1,8 @@
 import { usePosts } from '../hooks/useFirestore';
 import { useAuth } from '../context/AuthContext';
-import CreatePost from '../components/CreatePost';
-import PostCard from '../components/PostCard';
-import LoadingSpinner from '../components/LoadingSpinner';
+import CreatePost from '../components/social/CreatePost';
+import PostCard from '../components/social/PostCard';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { TrendingUp, Users, BookOpen } from 'lucide-react';
 
 const Home = () => {
