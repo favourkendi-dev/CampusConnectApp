@@ -32,12 +32,12 @@ const Profile = () => {
 
       <div className="mt-6">
         <h2 className="text-xl font-bold text-gray-900 mb-4">
-          {isOwnProfile ? 'My Posts' : `${profile?.displayName}'s Posts`}
+          {isOwnProfile ? 'My Posts' : `${profile?.displayName || 'User'}'s Posts`}
         </h2>
-        
+
         {postsLoading ? (
           <LoadingSpinner />
-        ) : posts.length === 0 ? (
+        ) : posts?.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
             <p className="text-gray-500">No posts yet</p>
           </div>
@@ -47,9 +47,10 @@ const Profile = () => {
               <PostCard
                 key={post.id}
                 post={post}
-                onLike={likePost}
-                onUnlike={unlikePost}
-                onDelete={deletePost}
+                currentUser={user}
+                onLike={() => likePost(post.id, user?.uid)}
+                onUnlike={() => unlikePost(post.id, user?.uid)}
+                onDelete={() => deletePost(post.id)}
               />
             ))}
           </div>

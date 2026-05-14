@@ -14,6 +14,7 @@ import {
   serverTimestamp,
   arrayUnion,
   arrayRemove,
+  increment,
 } from 'firebase/firestore';
 
 export const usePosts = () => {
@@ -44,10 +45,11 @@ export const usePosts = () => {
     try {
       const docRef = await addDoc(collection(db, 'posts'), {
         ...postData,
+        likesCount: postData.likesCount ?? 0,
+        likes: postData.likes ?? [],
+        comments: postData.comments ?? [],
+        shares: postData.shares ?? 0,
         createdAt: serverTimestamp(),
-        likes: [],
-        comments: [],
-        shares: 0,
       });
       return { success: true, id: docRef.id };
     } catch (error) {
@@ -75,6 +77,7 @@ export const usePosts = () => {
       const postRef = doc(db, 'posts', postId);
       await updateDoc(postRef, {
         likes: arrayUnion(userId),
+        likesCount: increment(1),
       });
       return { success: true };
     } catch (error) {
@@ -88,12 +91,52 @@ export const usePosts = () => {
       const postRef = doc(db, 'posts', postId);
       await updateDoc(postRef, {
         likes: arrayRemove(userId),
+        likesCount: increment(-1),
       });
       return { success: true };
     } catch (error) {
       console.error('Error unliking post:', error);
       return { success: false, error: error.message };
     }
+  };
+
+  const addComment = async (postId, commentData) => {
+    try {
+      const commentRef = collection(db, 'posts', postId, 'comments');
+      const docRef = await addDoc(commentRef, {
+        ...commentData,
+        createdAt: serverTimestamp(),
+      });
+
+      // Increment comments count on post
+      const postRef = doc(db, 'posts', postId);
+      await updateDoc(postRef, {
+        commentsCount: increment(1),
+      });
+
+      return { success: true, id: docRef.id };
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const getComments = (postId, callback) => {
+    const q = query(
+      collection(db, 'posts', postId, 'comments'),
+      orderBy('createdAt', 'asc')
+    );
+
+    return onSnapshot(q, (snapshot) => {
+      const comments = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate?.() || new Date(),
+      }));
+      callback(comments);
+    }, (error) => {
+      console.error('Comments listener error:', error);
+    });
   };
 
   const deletePost = async (postId) => {
@@ -106,7 +149,7 @@ export const usePosts = () => {
     }
   };
 
-  return { posts, loading, createPost, updatePost, likePost, unlikePost, deletePost };
+  return { posts, loading, createPost, updatePost, likePost, unlikePost, deletePost, addComment, getComments };
 };
 
 export const useUserProfile = (userId) => {
@@ -139,7 +182,45 @@ export const useUserProfile = (userId) => {
     }
   };
 
-  return { profile, loading, updateProfile };
+  const followUser = async (followerId, targetUserId) => {
+    try {
+      const targetRef = doc(db, 'users', targetUserId);
+      const followerRef = doc(db, 'users', followerId);
+
+      await updateDoc(targetRef, {
+        followers: arrayUnion(followerId),
+      });
+      await updateDoc(followerRef, {
+        following: arrayUnion(targetUserId),
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error following user:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const unfollowUser = async (followerId, targetUserId) => {
+    try {
+      const targetRef = doc(db, 'users', targetUserId);
+      const followerRef = doc(db, 'users', followerId);
+
+      await updateDoc(targetRef, {
+        followers: arrayRemove(followerId),
+      });
+      await updateDoc(followerRef, {
+        following: arrayRemove(targetUserId),
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error unfollowing user:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  return { profile, loading, updateProfile, followUser, unfollowUser };
 };
 
 export const useUserPosts = (userId) => {

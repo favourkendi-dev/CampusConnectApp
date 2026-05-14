@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useChat } from '../hooks/useChat';
 import { db } from '../firebase/config';
@@ -42,7 +42,9 @@ const Chat = () => {
 
   const handleSelectUser = async (selectedUser) => {
     const result = await startConversation([user.uid, selectedUser.id]);
-    if (result.success) {
+    // Let the hook handle setActiveConversation internally
+    // Only update if the hook didn't set it (fallback)
+    if (result.success && !activeConversation) {
       setActiveConversation({
         id: result.id,
         participants: [user.uid, selectedUser.id],
@@ -58,15 +60,19 @@ const Chat = () => {
     setActiveConversation(null);
   };
 
-  // Merge conversation data with user data for the list
-  const chatUsers = users.map((u) => {
-    const convo = conversations.find((c) => c.participants.includes(u.id));
-    return {
-      ...u,
-      lastMessage: convo?.lastMessage || '',
-      conversationId: convo?.id,
-    };
-  });
+  // Memoized: merge conversation data with user data for the list
+  const chatUsers = useMemo(() => {
+    return users.map((u) => {
+      const convo = conversations.find((c) =>
+        c.participants?.includes(u.id)
+      );
+      return {
+        ...u,
+        lastMessage: convo?.lastMessage || '',
+        conversationId: convo?.id || null,
+      };
+    });
+  }, [users, conversations]);
 
   if (loading || usersLoading) return <LoadingSpinner fullScreen />;
 

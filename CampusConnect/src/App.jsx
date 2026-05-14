@@ -14,7 +14,6 @@ import Profile from './pages/Profile';
 import Chat from './pages/Chat';
 import Explore from './pages/Explore';
 import NotFound from './pages/NotFound';
-import TestAll from './pages/TestAll';
 
 const RouteGuard = ({ children, isPrivate }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -43,10 +42,8 @@ const AppContent = () => {
     <div className="min-h-screen bg-gray-50">
       {isAuthenticated && <Navbar />}
 
-      <main>
+      <main className={isAuthenticated ? "pt-16" : ""}>
         <Routes>
-          <Route path="/test" element={<TestAll />} />
-
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
           <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
           <Route path="/chat" element={<PrivateRoute><Chat /></PrivateRoute>} />

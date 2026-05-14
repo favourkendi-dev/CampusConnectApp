@@ -13,7 +13,6 @@ import {
   getDocs,
 } from 'firebase/firestore';
 
-
 export const useChat = (currentUserId) => {
   const [conversations, setConversations] = useState([]);
   const [activeConversation, setActiveConversation] = useState(null);
@@ -39,7 +38,6 @@ export const useChat = (currentUserId) => {
       setConversations(convos);
       setLoading(false);
     }, (error) => {
-      // Handle snapshot errors gracefully instead of crashing
       console.error('Conversation listener error:', error);
       if (error.code === 'failed-precondition') {
         console.error(
@@ -83,9 +81,6 @@ export const useChat = (currentUserId) => {
     try {
       const sortedIds = [...participantIds].sort();
 
-      // FIX: array-contains-any to find conversations where current user
-      // is a participant, then filter client-side for exact match.
-      // Firestore doesn't support exact array equality matching.
       const q = query(
         collection(db, 'conversations'),
         where('participants', 'array-contains', currentUserId)
@@ -101,7 +96,8 @@ export const useChat = (currentUserId) => {
       });
 
       if (match) {
-        setActiveConversation({ id: match.id, ...match.data() });
+        const matchData = { id: match.id, ...match.data() };
+        setActiveConversation(matchData);
         return { success: true, id: match.id };
       }
 
@@ -112,10 +108,13 @@ export const useChat = (currentUserId) => {
         lastMessage: '',
       });
 
-      setActiveConversation({
+      const newConvo = {
         id: docRef.id,
         participants: sortedIds,
-      });
+        lastMessage: '',
+        lastMessageTime: new Date(),
+      };
+      setActiveConversation(newConvo);
 
       return { success: true, id: docRef.id };
     } catch (error) {

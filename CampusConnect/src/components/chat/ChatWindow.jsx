@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import ChatMessage from './ChatMessage';
 import { Send, ArrowLeft } from 'lucide-react';
 
-const ChatWindow = ({ conversation, messages, onSendMessage, onBack }) => {
+const ChatWindow = ({ conversation, messages = [], onSendMessage, onBack }) => {
   const { user } = useAuth();
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef(null);
@@ -19,7 +19,7 @@ const ChatWindow = ({ conversation, messages, onSendMessage, onBack }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
-    
+
     onSendMessage(conversation.id, newMessage.trim());
     setNewMessage('');
   };
@@ -40,7 +40,7 @@ const ChatWindow = ({ conversation, messages, onSendMessage, onBack }) => {
         </button>
         <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
           <span className="text-primary-600 text-sm font-bold">
-            {otherParticipant?.[0]?.toUpperCase()}
+            {otherParticipant?.[0]?.toUpperCase() || '?'}
           </span>
         </div>
         <div>
@@ -51,7 +51,7 @@ const ChatWindow = ({ conversation, messages, onSendMessage, onBack }) => {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
-        {messages.length === 0 ? (
+        {messages?.length === 0 ? (
           <div className="flex items-center justify-center h-full text-gray-400">
             <p>No messages yet. Start the conversation!</p>
           </div>

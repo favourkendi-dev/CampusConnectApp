@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom';
 import { Search, TrendingUp, Hash } from 'lucide-react';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
-
 const Explore = () => {
   const [users, setUsers] = useState([]);
   const [trendingPosts, setTrendingPosts] = useState([]);
@@ -19,10 +18,10 @@ const Explore = () => {
         const usersSnap = await getDocs(collection(db, 'users'));
         setUsers(usersSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
 
-        // Fetch trending posts (most liked)
+        // Fetch trending posts (most liked) — uses likesCount field
         const postsQuery = query(
           collection(db, 'posts'),
-          orderBy('likes', 'desc'),
+          orderBy('likesCount', 'desc'),
           limit(10)
         );
         const postsSnap = await getDocs(postsQuery);
@@ -69,7 +68,7 @@ const Explore = () => {
             <TrendingUp className="w-5 h-5 text-secondary-500" />
             Discover Students
           </h2>
-          
+
           {filteredUsers.length === 0 ? (
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
               <p className="text-gray-500">No students found</p>
@@ -118,6 +117,7 @@ const Explore = () => {
                 <span className="text-2xl font-bold text-primary-200">{idx + 1}</span>
                 <div>
                   <p className="text-sm text-gray-800 line-clamp-2">{post.content}</p>
+                  {/* Derive likes from array length, not likesCount field */}
                   <p className="text-xs text-gray-500 mt-1">{post.likes?.length || 0} likes</p>
                 </div>
               </div>

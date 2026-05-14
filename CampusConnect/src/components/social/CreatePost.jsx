@@ -21,8 +21,12 @@ const CreatePost = ({ onSubmit }) => {
       userId: user.uid,
       userName: user.displayName || userProfile?.displayName || 'Anonymous',
       userPhotoURL: user.photoURL || userProfile?.photoURL || '',
+      likesCount: 0,
+      likes: [],
+      comments: [],
+      shares: 0,
     });
-    
+
     setContent('');
     setImageUrl('');
     setIsSubmitting(false);
@@ -44,7 +48,7 @@ const CreatePost = ({ onSubmit }) => {
             rows={3}
             className="w-full px-3 py-2 text-gray-800 placeholder-gray-400 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
-          
+
           {imageUrl && (
             <div className="relative mt-2 inline-block">
               <img
@@ -79,7 +83,7 @@ const CreatePost = ({ onSubmit }) => {
                 </button>
               </ImageUpload>
             </div>
-            
+
             <button
               type="submit"
               disabled={isSubmitting || (!content.trim() && !imageUrl)}

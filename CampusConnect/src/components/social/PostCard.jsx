@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, MessageCircle, Share2, Trash2, MoreHorizontal, Edit2 } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Trash2, MoreHorizontal, Edit2, Send } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { db } from '../../firebase/config';
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, increment, updateDoc, doc } from 'firebase/firestore';
 
 const PostCard = ({
   post = {},
@@ -14,12 +16,48 @@ const PostCard = ({
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [showOptions, setShowOptions] = useState(false);
-  
+  const [comments, setComments] = useState([]);
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(post?.content || '');
 
-  const isLiked = post?.likes?.includes(currentUser?.uid);
-  const isOwner = post?.userId === currentUser?.uid;
+  // SAFE: likes is always an array
+  const likesArray = Array.isArray(post?.likes) ? post.likes : [];
+
+  // SAFE: userId from currentUser.uid
+  const userId = currentUser?.uid || '';
+
+  // SAFE: isLiked checks if userId exists in likes array
+  const isLiked = userId ? likesArray.includes(userId) : false;
+
+  // SAFE: count always derived from array length (source of truth)
+  const likesCount = likesArray.length;
+
+  const isOwner = post?.userId === userId;
+
+  // Real-time comments listener
+  useEffect(() => {
+    if (!showComments || !post?.id) return;
+
+    const q = query(
+      collection(db, 'posts', post.id, 'comments'),
+      orderBy('createdAt', 'asc')
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const commentsData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate?.() || new Date(),
+      }));
+      setComments(commentsData);
+    }, (error) => {
+      console.error('Comments listener error:', error);
+    });
+
+    return () => unsubscribe();
+  }, [showComments, post?.id]);
 
   const getFormattedDate = (dateValue) => {
     try {
@@ -44,6 +82,43 @@ const PostCard = ({
     } else {
       navigator.clipboard.writeText(`${window.location.origin}/post/${post?.id}`);
       alert('Link copied!');
+    }
+  };
+
+  const handleLikeClick = () => {
+    if (isLiked) {
+      onUnlike(post.id, userId);
+    } else {
+      onLike(post.id, userId);
+    }
+  };
+
+  const handleAddComment = async (e) => {
+    e.preventDefault();
+    if (!commentText.trim() || !userId) return;
+
+    setIsSubmittingComment(true);
+    try {
+      const commentRef = collection(db, 'posts', post.id, 'comments');
+      await addDoc(commentRef, {
+        text: commentText.trim(),
+        userId: userId,
+        userName: currentUser?.displayName || 'Anonymous',
+        userPhotoURL: currentUser?.photoURL || '',
+        createdAt: serverTimestamp(),
+      });
+
+      // Increment comments count on post
+      const postRef = doc(db, 'posts', post.id);
+      await updateDoc(postRef, {
+        commentsCount: increment(1),
+      });
+
+      setCommentText('');
+    } catch (error) {
+      console.error('Error adding comment:', error);
+    } finally {
+      setIsSubmittingComment(false);
     }
   };
 
@@ -106,13 +181,13 @@ const PostCard = ({
 
       <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <button onClick={() => isLiked ? onUnlike() : onLike()} className={`flex items-center gap-1.5 text-sm font-medium ${isLiked ? 'text-red-500' : 'text-gray-500'}`}>
+          <button onClick={handleLikeClick} className={`flex items-center gap-1.5 text-sm font-medium ${isLiked ? 'text-red-500' : 'text-gray-500'}`}>
             <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
-            <span>{post?.likes?.length || 0}</span>
+            <span>{likesCount}</span>
           </button>
           <button onClick={() => setShowComments(!showComments)} className="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-primary-600">
             <MessageCircle className="w-5 h-5" />
-            <span>{post?.comments?.length || 0}</span>
+            <span>{comments.length || post?.commentsCount || 0}</span>
           </button>
           <button onClick={handleShare} className="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-primary-600">
             <Share2 className="w-5 h-5" />
@@ -123,26 +198,45 @@ const PostCard = ({
 
       {showComments && (
         <div className="px-4 py-3 border-t border-gray-100 bg-gray-50">
-          <div className="space-y-3">
-            {post?.comments?.map((comment, idx) => (
-              <div key={idx} className="flex gap-2">
-                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                  <span className="text-blue-600 text-xs font-bold">{comment?.userName?.[0]?.toUpperCase()}</span>
+          <div className="space-y-3 max-h-60 overflow-y-auto">
+            {comments.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-2">No comments yet. Be the first!</p>
+            ) : (
+              comments.map((comment) => (
+                <div key={comment.id} className="flex gap-2">
+                  <img
+                    src={comment?.userPhotoURL || `https://ui-avatars.com/api/?name=${comment?.userName}&background=4F46E5&color=fff`}
+                    alt={comment?.userName}
+                    className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                  />
+                  <div className="bg-white rounded-lg px-3 py-2 flex-1">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-semibold text-gray-900">{comment?.userName}</p>
+                      <p className="text-[10px] text-gray-400">{getFormattedDate(comment?.createdAt)}</p>
+                    </div>
+                    <p className="text-sm text-gray-700">{comment?.text}</p>
+                  </div>
                 </div>
-                <div className="bg-white rounded-lg px-3 py-2 flex-1">
-                  <p className="text-xs font-semibold text-gray-900">{comment?.userName}</p>
-                  <p className="text-sm text-gray-700">{comment?.text}</p>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
-          <div className="mt-3 flex gap-2">
+          <form onSubmit={handleAddComment} className="mt-3 flex gap-2">
             <input
-              type="text" value={commentText} onChange={(e) => setCommentText(e.target.value)}
-              placeholder="Write a comment..." className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none"
+              type="text"
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder="Write a comment..."
+              className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-primary-500"
+              disabled={isSubmittingComment}
             />
-            <button className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg">Post</button>
-          </div>
+            <button
+              type="submit"
+              disabled={isSubmittingComment || !commentText.trim()}
+              className="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50"
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          </form>
         </div>
       )}
     </div>
