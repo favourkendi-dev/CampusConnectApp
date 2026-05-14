@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useChat } from '../hooks/useChat';
-import { db, collection, getDocs } from '../firebase/config';
+import { db } from '../firebase/config';
+import { collection, getDocs } from 'firebase/firestore';
 import UserList from '../components/profile/UserList';
 import ChatWindow from '../components/chat/ChatWindow';
 import LoadingSpinner from '../components/ui/LoadingSpinner';

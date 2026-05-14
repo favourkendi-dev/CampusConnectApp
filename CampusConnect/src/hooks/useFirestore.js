@@ -1,23 +1,20 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
+import { db } from '../firebase/config';
 import {
-  db,
   collection,
   doc,
   addDoc,
   updateDoc,
   deleteDoc,
-  getDoc,
-  getDocs,
   query,
   where,
   orderBy,
   limit,
   onSnapshot,
   serverTimestamp,
-  increment,
   arrayUnion,
   arrayRemove,
-} from '../firebase/config';
+} from 'firebase/firestore';
 
 export const usePosts = () => {
   const [posts, setPosts] = useState([]);
@@ -34,7 +31,7 @@ export const usePosts = () => {
       const postsData = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate?.() || new Date(),
+        createdAt: doc.data().createdAt?.toDate ? doc.data().createdAt.toDate() : new Date(),
       }));
       setPosts(postsData);
       setLoading(false);
@@ -55,6 +52,20 @@ export const usePosts = () => {
       return { success: true, id: docRef.id };
     } catch (error) {
       console.error('Error creating post:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const updatePost = async (postId, updatedData) => {
+    try {
+      const postRef = doc(db, 'posts', postId);
+      await updateDoc(postRef, {
+        ...updatedData,
+        updatedAt: serverTimestamp(),
+      });
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating post:', error);
       return { success: false, error: error.message };
     }
   };
@@ -95,7 +106,7 @@ export const usePosts = () => {
     }
   };
 
-  return { posts, loading, createPost, likePost, unlikePost, deletePost };
+  return { posts, loading, createPost, updatePost, likePost, unlikePost, deletePost };
 };
 
 export const useUserProfile = (userId) => {
@@ -128,37 +139,7 @@ export const useUserProfile = (userId) => {
     }
   };
 
-  const followUser = async (currentUserId, targetUserId) => {
-    try {
-      await updateDoc(doc(db, 'users', currentUserId), {
-        following: arrayUnion(targetUserId),
-      });
-      await updateDoc(doc(db, 'users', targetUserId), {
-        followers: arrayUnion(currentUserId),
-      });
-      return { success: true };
-    } catch (error) {
-      console.error('Error following user:', error);
-      return { success: false, error: error.message };
-    }
-  };
-
-  const unfollowUser = async (currentUserId, targetUserId) => {
-    try {
-      await updateDoc(doc(db, 'users', currentUserId), {
-        following: arrayRemove(targetUserId),
-      });
-      await updateDoc(doc(db, 'users', targetUserId), {
-        followers: arrayRemove(currentUserId),
-      });
-      return { success: true };
-    } catch (error) {
-      console.error('Error unfollowing user:', error);
-      return { success: false, error: error.message };
-    }
-  };
-
-  return { profile, loading, updateProfile, followUser, unfollowUser };
+  return { profile, loading, updateProfile };
 };
 
 export const useUserPosts = (userId) => {
@@ -178,7 +159,7 @@ export const useUserPosts = (userId) => {
       const postsData = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate?.() || new Date(),
+        createdAt: doc.data().createdAt?.toDate ? doc.data().createdAt.toDate() : new Date(),
       }));
       setPosts(postsData);
       setLoading(false);

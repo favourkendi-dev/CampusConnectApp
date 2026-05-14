@@ -1,5 +1,10 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { auth, onAuthStateChanged, db, doc, getDoc } from '../firebase/config';
+// FIXED: Pull ONLY initialized instances from your config
+import { auth, db } from '../firebase/config';
+// FIXED: Core Auth functions come from 'firebase/auth'
+import { onAuthStateChanged } from 'firebase/auth';
+// FIXED: Core Firestore functions come from 'firebase/firestore'
+import { doc, getDoc } from 'firebase/firestore';
 
 const AuthContext = createContext(null);
 

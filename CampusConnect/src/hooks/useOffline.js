@@ -1,22 +1,17 @@
 import { useState, useEffect } from 'react';
 
 export const useOffline = () => {
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [wasOffline, setWasOffline] = useState(false);
 
   useEffect(() => {
     const handleOnline = () => {
-      setIsOnline(true);
-      if (wasOffline) {
-        // Sync any queued actions
-        window.dispatchEvent(new CustomEvent('sync-offline-data'));
-      }
+      setIsOffline(false);
+      setWasOffline(true);
+      setTimeout(() => setWasOffline(false), 3000);
     };
 
-    const handleOffline = () => {
-      setIsOnline(false);
-      setWasOffline(true);
-    };
+    const handleOffline = () => setIsOffline(true);
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -25,7 +20,7 @@ export const useOffline = () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [wasOffline]);
+  }, []);
 
-  return { isOnline, wasOffline };
+  return { isOffline, wasOffline, isOnline: !isOffline };
 };

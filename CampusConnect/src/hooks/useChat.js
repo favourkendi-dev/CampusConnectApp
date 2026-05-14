@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
+import { db } from '../firebase/config';
 import {
-  db,
   collection,
   doc,
   addDoc,
@@ -11,7 +11,8 @@ import {
   onSnapshot,
   serverTimestamp,
   getDocs,
-} from '../firebase/config';
+} from 'firebase/firestore';
+
 
 export const useChat = (currentUserId) => {
   const [conversations, setConversations] = useState([]);
@@ -37,6 +38,16 @@ export const useChat = (currentUserId) => {
       }));
       setConversations(convos);
       setLoading(false);
+    }, (error) => {
+      // Handle snapshot errors gracefully instead of crashing
+      console.error('Conversation listener error:', error);
+      if (error.code === 'failed-precondition') {
+        console.error(
+          'Missing Firestore index. Create a composite index on: ' +
+          'conversations -> participants (Arrays) + lastMessageTime (Desc)'
+        );
+      }
+      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -61,6 +72,8 @@ export const useChat = (currentUserId) => {
         createdAt: doc.data().createdAt?.toDate?.() || new Date(),
       }));
       setMessages(msgs);
+    }, (error) => {
+      console.error('Messages listener error:', error);
     });
 
     return () => unsubscribe();
@@ -68,21 +81,32 @@ export const useChat = (currentUserId) => {
 
   const startConversation = async (participantIds) => {
     try {
-      // Check if conversation already exists
+      const sortedIds = [...participantIds].sort();
+
+      // FIX: array-contains-any to find conversations where current user
+      // is a participant, then filter client-side for exact match.
+      // Firestore doesn't support exact array equality matching.
       const q = query(
         collection(db, 'conversations'),
-        where('participants', '==', participantIds.sort())
+        where('participants', 'array-contains', currentUserId)
       );
       const existing = await getDocs(q);
 
-      if (!existing.empty) {
-        const convo = existing.docs[0];
-        setActiveConversation({ id: convo.id, ...convo.data() });
-        return { success: true, id: convo.id };
+      const match = existing.docs.find((doc) => {
+        const participants = doc.data().participants || [];
+        return (
+          participants.length === sortedIds.length &&
+          sortedIds.every((id) => participants.includes(id))
+        );
+      });
+
+      if (match) {
+        setActiveConversation({ id: match.id, ...match.data() });
+        return { success: true, id: match.id };
       }
 
       const docRef = await addDoc(collection(db, 'conversations'), {
-        participants: participantIds.sort(),
+        participants: sortedIds,
         createdAt: serverTimestamp(),
         lastMessageTime: serverTimestamp(),
         lastMessage: '',
@@ -90,7 +114,7 @@ export const useChat = (currentUserId) => {
 
       setActiveConversation({
         id: docRef.id,
-        participants: participantIds,
+        participants: sortedIds,
       });
 
       return { success: true, id: docRef.id };

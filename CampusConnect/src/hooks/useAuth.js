@@ -1,17 +1,22 @@
 import { useState } from 'react';
+// FIXED: Pull ONLY the initialized instances from your config
+import { auth, googleProvider, db } from '../firebase/config';
+
+// FIXED: Auth methods come from 'firebase/auth'
 import {
-  auth,
   signInWithPopup,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   updateProfile,
   signOut,
-  googleProvider,
-  db,
+} from 'firebase/auth';
+
+// FIXED: Firestore methods come from 'firebase/firestore'
+import {
   doc,
   setDoc,
   serverTimestamp,
-} from '../firebase/config';
+} from 'firebase/firestore';
 
 export const useAuth = () => {
   const [loading, setLoading] = useState(false);

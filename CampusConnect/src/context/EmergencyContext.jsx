@@ -1,5 +1,16 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { db, collection, query, where, orderBy, onSnapshot } from '../firebase/config';
+
+// 1. Only import 'db' from your local config
+import { db } from '../firebase/config';
+
+// 2. Import everything else from the official Firebase Firestore library
+import { 
+  collection, 
+  query, 
+  where, 
+  orderBy, 
+  onSnapshot 
+} from 'firebase/firestore';
 
 const EmergencyContext = createContext(null);
 

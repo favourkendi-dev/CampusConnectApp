@@ -1,15 +1,18 @@
 import { useCallback } from 'react';
+import { db, collection, addDoc, serverTimestamp } from '../firebase/config';
 
 export const useAnalytics = () => {
-  const trackEvent = useCallback((eventName, properties = {}) => {
-    // In production, integrate with Google Analytics, Mixpanel, or Amplitude
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', eventName, properties);
-    }
-    
-    // Also log to console in development
-    if (import.meta.env.DEV) {
-      console.log('[Analytics]', eventName, properties);
+  const trackEvent = useCallback(async (eventName, properties = {}) => {
+    try {
+      await addDoc(collection(db, 'analytics'), {
+        event: eventName,
+        properties,
+        timestamp: serverTimestamp(),
+        userAgent: navigator.userAgent,
+        url: window.location.href,
+      });
+    } catch (error) {
+      console.error('Analytics error:', error);
     }
   }, []);
 
@@ -17,9 +20,9 @@ export const useAnalytics = () => {
     trackEvent('page_view', { page });
   }, [trackEvent]);
 
-  const trackUserAction = useCallback((action, details = {}) => {
+  const trackAction = useCallback((action, details = {}) => {
     trackEvent('user_action', { action, ...details });
   }, [trackEvent]);
 
-  return { trackEvent, trackPageView, trackUserAction };
+  return { trackEvent, trackPageView, trackAction };
 };

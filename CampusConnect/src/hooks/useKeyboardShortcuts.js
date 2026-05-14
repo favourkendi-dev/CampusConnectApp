@@ -12,13 +12,13 @@ export const useKeyboardShortcuts = (shortcuts) => {
       const needsCtrl = parts.includes('ctrl') || parts.includes('cmd');
       const needsShift = parts.includes('shift');
       const needsAlt = parts.includes('alt');
-      const needsKey = parts.find((p) => !['ctrl', 'cmd', 'shift', 'alt'].includes(p));
+      const targetKey = parts.find((p) => !['ctrl', 'cmd', 'shift', 'alt'].includes(p));
 
       if (
         ctrl === needsCtrl &&
         shift === needsShift &&
         alt === needsAlt &&
-        key === needsKey
+        key === targetKey
       ) {
         e.preventDefault();
         action();
