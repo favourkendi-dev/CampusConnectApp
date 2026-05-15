@@ -14,7 +14,7 @@ import { db } from '../firebase/config';
 import { 
   collection, query, where, orderBy, limit, onSnapshot, 
   doc, getDoc, updateDoc, increment, serverTimestamp, 
-  Timestamp, getDocs
+  Timestamp, getDocs,setDoc
 } from 'firebase/firestore';
 
 // ===== REAL FIRESTORE HOOKS FOR SIDEBAR =====
@@ -148,10 +148,10 @@ const useUserHeartbeat = (userId) => {
     const updateHeartbeat = async () => {
       try {
         const userRef = doc(db, 'users', userId);
-        await updateDoc(userRef, {
+        await setDoc(userRef, {
           lastActive: serverTimestamp(),
-          isOnline: true
-        });
+          isOnline: true,
+        }, { merge: true });  // ← merge: true creates doc if missing
       } catch (err) {
         console.error('Heartbeat error:', err);
       }
@@ -163,7 +163,7 @@ const useUserHeartbeat = (userId) => {
     return () => {
       clearInterval(interval);
       const userRef = doc(db, 'users', userId);
-      updateDoc(userRef, { isOnline: false }).catch(() => {});
+      setDoc(userRef, { isOnline: false, lastActive: serverTimestamp() }, { merge: true }).catch(() => {});
     };
   }, [userId]);
 };

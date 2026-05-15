@@ -45,7 +45,7 @@ const ChatWindow = ({ conversation, messages = [], onSendMessage, onBack }) => {
         </div>
         <div>
           <p className="font-medium text-gray-900">Student</p>
-          <p className="text-xs text-accent-500">Online</p>
+          <p className="text-xs text-emerald-500">Online</p>
         </div>
       </div>
 

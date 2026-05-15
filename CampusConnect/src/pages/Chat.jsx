@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useChat } from '../hooks/useChat';
 import { db } from '../firebase/config';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, doc, onSnapshot } from 'firebase/firestore';
 import UserList from '../components/profile/UserList';
 import ChatWindow from '../components/chat/ChatWindow';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
@@ -21,15 +21,39 @@ const Chat = () => {
 
   const [users, setUsers] = useState([]);
   const [usersLoading, setUsersLoading] = useState(true);
+  const [selectedUserId, setSelectedUserId] = useState(null);
 
+  // Fetch users with real-time online status
   useEffect(() => {
+    if (!user) return;
+
+    let unsubscribers = [];
+
     const fetchUsers = async () => {
       try {
         const snapshot = await getDocs(collection(db, 'users'));
         const usersData = snapshot.docs
           .map((doc) => ({ id: doc.id, ...doc.data() }))
           .filter((u) => u.id !== user?.uid);
+
         setUsers(usersData);
+
+        // Listen for online status changes
+        usersData.forEach((u) => {
+          const userRef = doc(db, 'users', u.id);
+          const unsub = onSnapshot(userRef, (docSnap) => {
+            if (docSnap.exists()) {
+              setUsers((prev) =>
+                prev.map((userItem) =>
+                  userItem.id === u.id
+                    ? { ...userItem, isOnline: docSnap.data().isOnline }
+                    : userItem
+                )
+              );
+            }
+          });
+          unsubscribers.push(unsub);
+        });
       } catch (error) {
         console.error('Error fetching users:', error);
       } finally {
@@ -37,18 +61,19 @@ const Chat = () => {
       }
     };
 
-    if (user) fetchUsers();
+    fetchUsers();
+
+    return () => {
+      unsubscribers.forEach((unsub) => unsub());
+    };
   }, [user]);
 
   const handleSelectUser = async (selectedUser) => {
+    setSelectedUserId(selectedUser.id);
     const result = await startConversation([user.uid, selectedUser.id]);
-    // Let the hook handle setActiveConversation internally
-    // Only update if the hook didn't set it (fallback)
-    if (result.success && !activeConversation) {
-      setActiveConversation({
-        id: result.id,
-        participants: [user.uid, selectedUser.id],
-      });
+    
+    if (!result.success) {
+      console.error('Failed to start conversation:', result.error);
     }
   };
 
@@ -58,9 +83,10 @@ const Chat = () => {
 
   const handleBack = () => {
     setActiveConversation(null);
+    setSelectedUserId(null);
   };
 
-  // Memoized: merge conversation data with user data for the list
+  // Merge conversation data with user data
   const chatUsers = useMemo(() => {
     return users.map((u) => {
       const convo = conversations.find((c) =>
@@ -84,7 +110,7 @@ const Chat = () => {
           <UserList
             users={chatUsers}
             onSelectUser={handleSelectUser}
-            selectedUserId={activeConversation?.participants?.find((id) => id !== user?.uid)}
+            selectedUserId={selectedUserId}
           />
         </div>
 

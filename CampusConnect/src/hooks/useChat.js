@@ -39,12 +39,6 @@ export const useChat = (currentUserId) => {
       setLoading(false);
     }, (error) => {
       console.error('Conversation listener error:', error);
-      if (error.code === 'failed-precondition') {
-        console.error(
-          'Missing Firestore index. Create a composite index on: ' +
-          'conversations -> participants (Arrays) + lastMessageTime (Desc)'
-        );
-      }
       setLoading(false);
     });
 
@@ -70,17 +64,16 @@ export const useChat = (currentUserId) => {
         createdAt: doc.data().createdAt?.toDate?.() || new Date(),
       }));
       setMessages(msgs);
-    }, (error) => {
-      console.error('Messages listener error:', error);
     });
 
     return () => unsubscribe();
   }, [activeConversation?.id]);
 
-  const startConversation = async (participantIds) => {
+  const startConversation = useCallback(async (participantIds) => {
     try {
       const sortedIds = [...participantIds].sort();
 
+      // Check if conversation already exists
       const q = query(
         collection(db, 'conversations'),
         where('participants', 'array-contains', currentUserId)
@@ -98,9 +91,10 @@ export const useChat = (currentUserId) => {
       if (match) {
         const matchData = { id: match.id, ...match.data() };
         setActiveConversation(matchData);
-        return { success: true, id: match.id };
+        return { success: true, conversation: matchData };
       }
 
+      // Create new conversation
       const docRef = await addDoc(collection(db, 'conversations'), {
         participants: sortedIds,
         createdAt: serverTimestamp(),
@@ -116,14 +110,14 @@ export const useChat = (currentUserId) => {
       };
       setActiveConversation(newConvo);
 
-      return { success: true, id: docRef.id };
+      return { success: true, conversation: newConvo };
     } catch (error) {
       console.error('Error starting conversation:', error);
       return { success: false, error: error.message };
     }
-  };
+  }, [currentUserId]);
 
-  const sendMessage = async (conversationId, text) => {
+  const sendMessage = useCallback(async (conversationId, text) => {
     try {
       await addDoc(
         collection(db, 'conversations', conversationId, 'messages'),
@@ -145,7 +139,7 @@ export const useChat = (currentUserId) => {
       console.error('Error sending message:', error);
       return { success: false, error: error.message };
     }
-  };
+  }, [currentUserId]);
 
   return {
     conversations,

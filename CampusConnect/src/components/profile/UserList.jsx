@@ -39,14 +39,28 @@ const UserList = ({ users, onSelectUser, selectedUserId }) => {
                 selectedUserId === user.id ? 'bg-primary-50 border-l-4 border-primary-600' : ''
               }`}
             >
-              <img
-                src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}&background=4F46E5&color=fff`}
-                alt={user.displayName}
-                className="w-10 h-10 rounded-full object-cover"
-              />
+              <div className="relative">
+                <img
+                  src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}&background=4F46E5&color=fff`}
+                  alt={user.displayName}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+                <span
+                  className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
+                    user.isOnline ? 'bg-emerald-500' : 'bg-gray-400'
+                  }`}
+                />
+              </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-gray-900 truncate">{user.displayName}</p>
-                <p className="text-xs text-gray-500 truncate">{user.lastMessage || 'Start chatting'}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-gray-900 truncate">{user.displayName}</p>
+                  {user.isOnline && (
+                    <span className="text-xs text-emerald-600 font-medium">Online</span>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 truncate">
+                  {user.lastMessage || (user.isOnline ? 'Online now' : 'Offline')}
+                </p>
               </div>
               <MessageCircle className="w-4 h-4 text-gray-400" />
             </button>
