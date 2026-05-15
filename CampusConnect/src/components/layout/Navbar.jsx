@@ -2,7 +2,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthContext as useAuth } from "../../context/AuthContext";
 import { useAuth as useAuthActions } from '../../hooks/useAuth';
 import { useState } from 'react';
-import { Home, MessageCircle, User, Search, LogOut, Menu, X, Bell, Megaphone, Shield } from 'lucide-react';
+import { Home, MessageCircle, User, Search, LogOut, Menu, X, Bell, Megaphone, Shield, LayoutDashboard } from 'lucide-react';
 
 const Navbar = () => {
   const { user, userProfile, isAuthenticated } = useAuth();
@@ -20,6 +20,7 @@ const Navbar = () => {
 
   const navLinks = [
     { to: '/', icon: Home, label: 'Home' },
+    { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/chat', icon: MessageCircle, label: 'Chat' },
     { to: '/explore', icon: Search, label: 'Explore' },
     { to: '/announcements', icon: Megaphone, label: 'Announcements' },

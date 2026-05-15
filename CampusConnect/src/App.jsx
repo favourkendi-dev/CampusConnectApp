@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuthContext as useAuth } from './context/AuthContext';
 import { useEffect } from 'react';
-
+import Dashboard from './pages/Dashboard';
 import {
   LoadingSpinner,
   Navbar,
@@ -48,6 +48,7 @@ const AppContent = () => {
         <Routes>
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
           <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+          <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/chat" element={<PrivateRoute><Chat /></PrivateRoute>} />
           <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
           <Route path="/profile/:userId?" element={<PrivateRoute><Profile /></PrivateRoute>} />
