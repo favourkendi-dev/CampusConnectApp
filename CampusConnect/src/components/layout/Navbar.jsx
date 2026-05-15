@@ -2,7 +2,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useAuth as useAuthActions } from '../../hooks/useAuth';
 import { useState } from 'react';
-import { Home, MessageCircle, User, Search, LogOut, Menu, X, Bell } from 'lucide-react';
+import { Home, MessageCircle, User, Search, LogOut, Menu, X, Bell, Megaphone } from 'lucide-react';
 
 const Navbar = () => {
   const { user, isAuthenticated } = useAuth();
@@ -20,6 +20,7 @@ const Navbar = () => {
     { to: '/', icon: Home, label: 'Home' },
     { to: '/chat', icon: MessageCircle, label: 'Chat' },
     { to: '/explore', icon: Search, label: 'Explore' },
+    { to: '/announcements', icon: Megaphone, label: 'Announcements' },
     { to: '/profile', icon: User, label: 'Profile' },
   ];
 
@@ -88,7 +89,7 @@ const Navbar = () => {
                   <Bell className="w-5 h-5" />
                   <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
                 </button>
-                
+
                 {/* Profile & Logout Group */}
                 <div className="hidden md:flex items-center gap-3 ml-2 border-l pl-4 border-gray-100">
                   <img
