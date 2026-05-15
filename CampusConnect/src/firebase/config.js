@@ -1,6 +1,7 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCzykkcDmKfuBoSu1RbxfkT3BYKDEXOb6o",
@@ -12,12 +13,9 @@ const firebaseConfig = {
   measurementId: "G-YRQ0F0BN56"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-
-// Export instances to use across the app
+const analytics = getAnalytics(app);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-export const googleProvider = new GoogleAuthProvider();
-
+export const googleProvider = new GoogleAuthProvider(); 
 export default app;

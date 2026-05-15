@@ -1,8 +1,5 @@
 import { useState } from 'react';
-// FIXED: Pull ONLY the initialized instances from your config
 import { auth, googleProvider, db } from '../firebase/config';
-
-// FIXED: Auth methods come from 'firebase/auth'
 import {
   signInWithPopup,
   signInWithEmailAndPassword,
@@ -10,8 +7,6 @@ import {
   updateProfile,
   signOut,
 } from 'firebase/auth';
-
-// FIXED: Firestore methods come from 'firebase/firestore'
 import {
   doc,
   setDoc,
@@ -39,6 +34,9 @@ export const useAuth = () => {
         break;
       case 'auth/wrong-password':
         message = 'Incorrect password';
+        break;
+      case 'auth/invalid-credential':
+        message = 'Invalid email or password';  // 👈 added, covers newer Firebase SDK
         break;
       case 'auth/popup-closed-by-user':
         message = 'Sign-in popup was closed';
@@ -69,15 +67,12 @@ export const useAuth = () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
-      
-      // Create/update user document in Firestore
       await setDoc(doc(db, 'users', user.uid), {
         displayName: user.displayName,
         email: user.email,
         photoURL: user.photoURL,
         lastLogin: serverTimestamp(),
       }, { merge: true });
-      
       setLoading(false);
       return { success: true, user };
     } catch (err) {
@@ -91,8 +86,6 @@ export const useAuth = () => {
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(result.user, { displayName });
-      
-      // Create user document in Firestore
       await setDoc(doc(db, 'users', result.user.uid), {
         displayName,
         email,
@@ -106,7 +99,6 @@ export const useAuth = () => {
         createdAt: serverTimestamp(),
         lastLogin: serverTimestamp(),
       });
-      
       setLoading(false);
       return { success: true, user: result.user };
     } catch (err) {
