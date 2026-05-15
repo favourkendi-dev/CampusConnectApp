@@ -19,8 +19,6 @@ export { default as AchievementBadge } from "./profile/AchievementBadge";
 export { default as LeaderboardRow } from "./profile/LeaderboardRow";
 
 export { default as EventCard } from "./campus/EventCard";
-export { default as EmergencyBanner } from "./campus/EmergencyBanner";
-export { default as DiningHallCard } from "./campus/DiningHallCard";
 export { default as LostFoundCard } from "./campus/LostFoundCard";
 export { default as MapPin } from "./campus/MapPin";
 export { default as NotificationItem } from "./campus/NotificationItem";

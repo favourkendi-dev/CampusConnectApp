@@ -14,6 +14,7 @@ import Profile from './pages/Profile';
 import Chat from './pages/Chat';
 import Explore from './pages/Explore';
 import Announcements from './pages/Announcements';
+import Admin from './pages/Admin';
 import NotFound from './pages/NotFound';
 
 const RouteGuard = ({ children, isPrivate }) => {
@@ -52,6 +53,7 @@ const AppContent = () => {
           <Route path="/profile/:userId?" element={<PrivateRoute><Profile /></PrivateRoute>} />
           <Route path="/explore" element={<PrivateRoute><Explore /></PrivateRoute>} />
           <Route path="/announcements" element={<PrivateRoute><Announcements /></PrivateRoute>} />
+          <Route path="/admin" element={<PrivateRoute><Admin /></PrivateRoute>} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -20,8 +20,6 @@ import {
   AchievementBadge,
 
   EventCard,
-  EmergencyBanner,
-  DiningHallCard,
   LostFoundCard,
 
   CourseCard,
@@ -87,8 +85,6 @@ export default function TestAll() {
 
       <h2>Campus</h2>
       <EventCard />
-      <EmergencyBanner />
-      <DiningHallCard />
       <LostFoundCard />
       <MapPin />
       <NotificationItem />

@@ -2,10 +2,10 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useAuth as useAuthActions } from '../../hooks/useAuth';
 import { useState } from 'react';
-import { Home, MessageCircle, User, Search, LogOut, Menu, X, Bell, Megaphone } from 'lucide-react';
+import { Home, MessageCircle, User, Search, LogOut, Menu, X, Bell, Megaphone, Shield } from 'lucide-react';
 
 const Navbar = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, userProfile, isAuthenticated } = useAuth();
   const { logout } = useAuthActions();
   const navigate = useNavigate();
   const location = useLocation();
@@ -16,30 +16,26 @@ const Navbar = () => {
     navigate('/login');
   };
 
+  const isAdmin = userProfile?.role === 'admin' || user?.email?.includes('admin');
+
   const navLinks = [
     { to: '/', icon: Home, label: 'Home' },
     { to: '/chat', icon: MessageCircle, label: 'Chat' },
     { to: '/explore', icon: Search, label: 'Explore' },
     { to: '/announcements', icon: Megaphone, label: 'Announcements' },
     { to: '/profile', icon: User, label: 'Profile' },
+    ...(isAdmin ? [{ to: '/admin', icon: Shield, label: 'Admin' }] : []),
   ];
 
   const isActive = (path) => location.pathname === path;
 
-  // Logic to determine which photo to show
   const getAvatarUrl = () => {
-    // 1. If it's YOU (the developer), show the local file from /public folder
-    // REPLACE the email below with your actual login email
     if (user?.email === 'favourkendi0@gmail.com') {
       return '/CampusConnect/src/assets/favour.jpeg'; 
     }
-
-    // 2. If any other user has uploaded a photo, use that
     if (user?.photoURL) {
       return user.photoURL;
     }
-
-    // 3. Otherwise, generate an initial (e.g., 'F' for Farah)
     const name = user?.displayName || 'User';
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=4F46E5&color=fff&bold=true`;
   };
@@ -48,7 +44,6 @@ const Navbar = () => {
     <nav className="bg-white shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
-          {/* Logo Section */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center gap-2">
               <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
@@ -60,7 +55,6 @@ const Navbar = () => {
             </Link>
           </div>
 
-          {/* Desktop Navigation Links */}
           {isAuthenticated && (
             <div className="hidden md:flex items-center space-x-1">
               {navLinks.map((link) => (
@@ -80,24 +74,20 @@ const Navbar = () => {
             </div>
           )}
 
-          {/* Right Side Icons & Profile */}
           <div className="flex items-center gap-3">
             {isAuthenticated ? (
               <>
-                {/* Notification Bell */}
                 <button className="p-2 text-gray-500 hover:text-indigo-600 transition-colors relative">
                   <Bell className="w-5 h-5" />
                   <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
                 </button>
 
-                {/* Profile & Logout Group */}
                 <div className="hidden md:flex items-center gap-3 ml-2 border-l pl-4 border-gray-100">
                   <img
                     src={getAvatarUrl()}
                     alt="Profile"
                     className="w-9 h-9 rounded-full object-cover border-2 border-indigo-100 shadow-sm"
                     onError={(e) => {
-                        // Fallback if your local image fails to load
                         e.target.src = `https://ui-avatars.com/api/?name=${user?.displayName || 'U'}&background=4F46E5&color=fff`;
                     }}
                   />
@@ -111,7 +101,6 @@ const Navbar = () => {
                 </div>
               </>
             ) : (
-              /* Auth Buttons for logged-out users */
               <div className="hidden md:flex items-center gap-3">
                 <Link
                   to="/login"
@@ -128,7 +117,6 @@ const Navbar = () => {
               </div>
             )}
 
-            {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="md:hidden p-2 text-gray-600 hover:text-indigo-600"
@@ -139,11 +127,9 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Sidebar Menu */}
       {mobileMenuOpen && isAuthenticated && (
         <div className="md:hidden bg-white border-t border-gray-100 shadow-inner">
           <div className="px-4 pt-4 pb-3 space-y-1">
-            {/* User Info Header for Mobile */}
             <div className="flex items-center gap-3 pb-4 border-b border-gray-50 mb-2">
               <img
                 src={getAvatarUrl()}
@@ -156,7 +142,6 @@ const Navbar = () => {
               </div>
             </div>
 
-            {/* Nav Links for Mobile */}
             {navLinks.map((link) => (
               <Link
                 key={link.to}
@@ -173,7 +158,6 @@ const Navbar = () => {
               </Link>
             ))}
 
-            {/* Logout for Mobile */}
             <button
               onClick={() => {
                 handleLogout();
