@@ -1,4 +1,9 @@
 @theme {
+  /* Basic colors */
+  --color-white: #FFFFFF;
+  --color-black: #000000;
+  --color-transparent: transparent;
+
   /* Spacing */
   --spacing-0: 0px;
   --spacing-1: 0.25rem;
