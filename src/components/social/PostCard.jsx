@@ -34,7 +34,8 @@ const PostCard = ({
   // SAFE: count always derived from array length (source of truth)
   const likesCount = likesArray.length;
 
-  const isOwner = post?.userId === userId;
+  // FIXED: Check authorId instead of userId
+  const isOwner = post?.authorId === userId;
 
   // Real-time comments listener
   useEffect(() => {
@@ -42,14 +43,14 @@ const PostCard = ({
 
     const q = query(
       collection(db, 'posts', post.id, 'comments'),
-      orderBy('createdAt', 'asc')
+      orderBy('CreatedAt', 'asc')
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const commentsData = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate?.() || new Date(),
+        CreatedAt: doc.data().CreatedAt?.toDate?.() || new Date(),
       }));
       setComments(commentsData);
     }, (error) => {
@@ -102,10 +103,10 @@ const PostCard = ({
       const commentRef = collection(db, 'posts', post.id, 'comments');
       await addDoc(commentRef, {
         text: commentText.trim(),
-        userId: userId,
-        userName: currentUser?.displayName || 'Anonymous',
-        userPhotoURL: currentUser?.photoURL || '',
-        createdAt: serverTimestamp(),
+        authorId: userId,
+        authorName: currentUser?.displayName || 'Anonymous',
+        authorPhotoURL: currentUser?.photoURL || '',
+        CreatedAt: serverTimestamp(),
       });
 
       // Increment comments count on post
@@ -127,14 +128,14 @@ const PostCard = ({
       <div className="p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <img
-            src={post?.userPhotoURL || `https://ui-avatars.com/api/?name=${post?.userName}&background=4F46E5&color=fff`}
+            src={post?.authorPhotoURL || `https://ui-avatars.com/api/?name=${post?.authorName}&background=4F46E5&color=fff`}
             alt="User" className="w-10 h-10 rounded-full object-cover"
           />
           <div>
-            <Link to={`/profile/${post?.userId}`} className="font-semibold text-gray-900 hover:text-primary-600 transition-colors">
-              {post?.userName || 'User'}
+            <Link to={`/profile/${post?.authorId}`} className="font-semibold text-gray-900 hover:text-primary-600 transition-colors">
+              {post?.authorName || 'User'}
             </Link>
-            <p className="text-xs text-gray-500">{getFormattedDate(post?.createdAt)}</p>
+            <p className="text-xs text-gray-500">{getFormattedDate(post?.CreatedAt)}</p>
           </div>
         </div>
 
@@ -205,14 +206,14 @@ const PostCard = ({
               comments.map((comment) => (
                 <div key={comment.id} className="flex gap-2">
                   <img
-                    src={comment?.userPhotoURL || `https://ui-avatars.com/api/?name=${comment?.userName}&background=4F46E5&color=fff`}
-                    alt={comment?.userName}
+                    src={comment?.authorPhotoURL || `https://ui-avatars.com/api/?name=${comment?.authorName}&background=4F46E5&color=fff`}
+                    alt={comment?.authorName}
                     className="w-8 h-8 rounded-full object-cover flex-shrink-0"
                   />
                   <div className="bg-white rounded-lg px-3 py-2 flex-1">
                     <div className="flex items-center justify-between">
-                      <p className="text-xs font-semibold text-gray-900">{comment?.userName}</p>
-                      <p className="text-[10px] text-gray-400">{getFormattedDate(comment?.createdAt)}</p>
+                      <p className="text-xs font-semibold text-gray-900">{comment?.authorName}</p>
+                      <p className="text-[10px] text-gray-400">{getFormattedDate(comment?.CreatedAt)}</p>
                     </div>
                     <p className="text-sm text-gray-700">{comment?.text}</p>
                   </div>
