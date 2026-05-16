@@ -1,51 +1,11 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@theme {
-  /* Primary: Deep Indigo */
-  --color-primary-50: #EEF2FF;
-  --color-primary-100: #E0E7FF;
-  --color-primary-200: #C7D2FE;
-  --color-primary-300: #A5B4FC;
-  --color-primary-400: #818CF8;
-  --color-primary-500: #6366F1;
-  --color-primary-600: #4F46E5;
-  --color-primary-700: #4338CA;
-  --color-primary-800: #3730A3;
-  --color-primary-900: #312E81;
-
-  /* Secondary: Warm Orange */
-  --color-secondary-50: #FFF7ED;
-  --color-secondary-100: #FFEDD5;
-  --color-secondary-200: #FED7AA;
-  --color-secondary-300: #FDBA74;
-  --color-secondary-400: #FB923C;
-  --color-secondary-500: #F97316;
-  --color-secondary-600: #EA580C;
-  --color-secondary-700: #C2410C;
-  --color-secondary-800: #9A3412;
-  --color-secondary-900: #7C2D12;
-
-  /* Accent: Mint Green */
-  --color-accent-50: #ECFDF5;
-  --color-accent-100: #D1FAE5;
-  --color-accent-200: #A7F3D0;
-  --color-accent-300: #6EE7B7;
-  --color-accent-400: #34D399;
-  --color-accent-500: #10B981;
-  --color-accent-600: #059669;
-  --color-accent-700: #047857;
-  --color-accent-800: #065F46;
-  --color-accent-900: #064E3B;
-
-  /* Font */
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-}
-
-/* Base styles */
 @layer base {
   body {
     @apply antialiased text-gray-900 bg-gray-50;
-    font-family: var(--font-sans);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 
   /* Custom scrollbar */
@@ -68,7 +28,6 @@
   }
 }
 
-/* Component utilities */
 @layer components {
   .btn-primary {
     @apply px-4 py-2 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
@@ -87,7 +46,6 @@
   }
 }
 
-/* Utility classes */
 @layer utilities {
   .line-clamp-2 {
     display: -webkit-box;
