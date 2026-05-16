@@ -102,7 +102,7 @@ const PostCard = ({
     try {
       const commentRef = collection(db, 'posts', post.id, 'comments');
       await addDoc(commentRef, {
-        text: commentText.trim(),
+        content: commentText.trim(),
         authorId: userId,
         authorName: currentUser?.displayName || 'Anonymous',
         authorPhotoURL: currentUser?.photoURL || '',
@@ -215,7 +215,7 @@ const PostCard = ({
                       <p className="text-xs font-semibold text-gray-900">{comment?.authorName}</p>
                       <p className="text-[10px] text-gray-400">{getFormattedDate(comment?.CreatedAt)}</p>
                     </div>
-                    <p className="text-sm text-gray-700">{comment?.text}</p>
+                    <p className="text-sm text-gray-700">{comment?.content}</p>
                   </div>
                 </div>
               ))
