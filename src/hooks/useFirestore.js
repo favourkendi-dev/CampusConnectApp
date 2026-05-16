@@ -24,7 +24,7 @@ export const usePosts = () => {
   useEffect(() => {
     const q = query(
       collection(db, 'posts'),
-      orderBy('createdAt', 'desc'),
+      orderBy('CreatedAt', 'desc'),
       limit(50)
     );
 
@@ -32,7 +32,7 @@ export const usePosts = () => {
       const postsData = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate ? doc.data().createdAt.toDate() : new Date(),
+        CreatedAt: doc.data().CreatedAt?.toDate ? doc.data().CreatedAt.toDate() : new Date(),
       }));
       setPosts(postsData);
       setLoading(false);
@@ -49,7 +49,7 @@ export const usePosts = () => {
         likes: postData.likes ?? [],
         comments: postData.comments ?? [],
         shares: postData.shares ?? 0,
-        createdAt: serverTimestamp(),
+        CreatedAt: serverTimestamp(),
       });
       return { success: true, id: docRef.id };
     } catch (error) {
@@ -105,7 +105,7 @@ export const usePosts = () => {
       const commentRef = collection(db, 'posts', postId, 'comments');
       const docRef = await addDoc(commentRef, {
         ...commentData,
-        createdAt: serverTimestamp(),
+        CreatedAt: serverTimestamp(),
       });
 
       // Increment comments count on post
@@ -124,14 +124,14 @@ export const usePosts = () => {
   const getComments = (postId, callback) => {
     const q = query(
       collection(db, 'posts', postId, 'comments'),
-      orderBy('createdAt', 'asc')
+      orderBy('CreatedAt', 'asc')
     );
 
     return onSnapshot(q, (snapshot) => {
       const comments = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate?.() || new Date(),
+        CreatedAt: doc.data().CreatedAt?.toDate?.() || new Date(),
       }));
       callback(comments);
     }, (error) => {
@@ -232,15 +232,15 @@ export const useUserPosts = (userId) => {
 
     const q = query(
       collection(db, 'posts'),
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc')
+      where('authorId', '==', userId),
+      orderBy('CreatedAt', 'desc')
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const postsData = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate ? doc.data().createdAt.toDate() : new Date(),
+        CreatedAt: doc.data().CreatedAt?.toDate ? doc.data().CreatedAt.toDate() : new Date(),
       }));
       setPosts(postsData);
       setLoading(false);

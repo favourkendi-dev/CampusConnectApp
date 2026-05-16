@@ -18,9 +18,9 @@ const CreatePost = ({ onSubmit }) => {
     await onSubmit({
       content: content.trim(),
       imageUrl,
-      userId: user.uid,
-      userName: user.displayName || userProfile?.displayName || 'Anonymous',
-      userPhotoURL: user.photoURL || userProfile?.photoURL || '',
+      authorId: user.uid,
+      authorName: user.displayName || userProfile?.displayName || 'Anonymous',
+      authorPhotoURL: user.photoURL || userProfile?.photoURL || '',
       likesCount: 0,
       likes: [],
       comments: [],
