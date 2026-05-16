@@ -108,7 +108,6 @@ export const usePosts = () => {
         CreatedAt: serverTimestamp(),
       });
 
-      // Increment comments count on post
       const postRef = doc(db, 'posts', postId);
       await updateDoc(postRef, {
         commentsCount: increment(1),
