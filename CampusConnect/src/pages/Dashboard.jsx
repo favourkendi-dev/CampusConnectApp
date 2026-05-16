@@ -33,7 +33,7 @@ import { format, subDays, startOfWeek, isSameDay } from 'date-fns';
 
 // ===== HOOKS =====
 
-const useUserStats = (userId) => {
+const useCampusStats = () => {
   const [stats, setStats] = useState({
     postsCount: 0,
     totalLikes: 0,
@@ -44,19 +44,14 @@ const useUserStats = (userId) => {
   });
 
   useEffect(() => {
-    if (!userId) return;
-
     const fetchStats = async () => {
       try {
-        // Posts count & likes
-        const postsQuery = query(
-          collection(db, 'posts'),
-          where('userId', '==', userId)
-        );
+        // All posts count & likes
+        const postsQuery = query(collection(db, 'posts'));
         const postsSnap = await getDocs(postsQuery);
         const postsCount = postsSnap.size;
         const totalLikes = postsSnap.docs.reduce(
-          (sum, d) => sum + (d.data().likes?.length || 0),
+          (sum, d) => sum + (d.data().likesCount || 0),
           0
         );
         const totalComments = postsSnap.docs.reduce(
@@ -64,18 +59,12 @@ const useUserStats = (userId) => {
           0
         );
 
-        // Study groups
-        const groupsQuery = query(
-          collection(db, 'studyGroups'),
-          where('members', 'array-contains', userId)
-        );
+        // All study groups
+        const groupsQuery = query(collection(db, 'studyGroups'));
         const groupsSnap = await getDocs(groupsQuery);
 
-        // Events attending
-        const eventsQuery = query(
-          collection(db, 'events'),
-          where('attendees', 'array-contains', userId)
-        );
+        // All events
+        const eventsQuery = query(collection(db, 'events'));
         const eventsSnap = await getDocs(eventsQuery);
 
         setStats({
@@ -93,23 +82,20 @@ const useUserStats = (userId) => {
     };
 
     fetchStats();
-  }, [userId]);
+  }, []);
 
   return stats;
 };
 
-const useWeeklyActivity = (userId) => {
+const useWeeklyCampusActivity = () => {
   const [activity, setActivity] = useState([]);
 
   useEffect(() => {
-    if (!userId) return;
-
     const weekAgo = Timestamp.fromDate(subDays(new Date(), 7));
     const q = query(
       collection(db, 'posts'),
-      where('userId', '==', userId),
-      where('createdAt', '>=', weekAgo),
-      orderBy('createdAt', 'asc')
+      where('CreatedAt', '>=', weekAgo),
+      orderBy('CreatedAt', 'asc')
     );
 
     const unsub = onSnapshot(q, (snapshot) => {
@@ -119,34 +105,31 @@ const useWeeklyActivity = (userId) => {
       for (let i = 0; i < 7; i++) {
         const day = subDays(new Date(), 6 - i);
         const dayPosts = snapshot.docs.filter((d) => {
-          const date = d.data().createdAt?.toDate?.();
+          const date = d.data().CreatedAt?.toDate?.();
           return date && isSameDay(date, day);
         });
         days.push({
           day: format(day, 'EEE'),
           posts: dayPosts.length,
-          likes: dayPosts.reduce((s, d) => s + (d.data().likes?.length || 0), 0),
+          likes: dayPosts.reduce((s, d) => s + (d.data().likesCount || 0), 0),
         });
       }
       setActivity(days);
     });
 
     return unsub;
-  }, [userId]);
+  }, []);
 
   return activity;
 };
 
-const useRecentActivity = (userId) => {
+const useRecentCampusActivity = () => {
   const [activities, setActivities] = useState([]);
 
   useEffect(() => {
-    if (!userId) return;
-
     const q = query(
       collection(db, 'posts'),
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc'),
+      orderBy('CreatedAt', 'desc'),
       limit(5)
     );
 
@@ -155,15 +138,15 @@ const useRecentActivity = (userId) => {
         id: d.id,
         type: 'post',
         content: d.data().content?.substring(0, 60) + '...',
-        likes: d.data().likes?.length || 0,
+        likes: d.data().likesCount || 0,
         comments: d.data().commentsCount || 0,
-        createdAt: d.data().createdAt?.toDate?.(),
+        createdAt: d.data().CreatedAt?.toDate?.(),
       }));
       setActivities(items);
     });
 
     return unsub;
-  }, [userId]);
+  }, []);
 
   return activities;
 };
@@ -341,9 +324,9 @@ const Dashboard = () => {
   const { user, userProfile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  const stats = useUserStats(user?.uid);
-  const weeklyActivity = useWeeklyActivity(user?.uid);
-  const recentActivity = useRecentActivity(user?.uid);
+  const stats = useCampusStats();
+  const weeklyActivity = useWeeklyCampusActivity();
+  const recentActivity = useRecentCampusActivity();
   const upcomingEvents = useUpcomingEvents();
 
   if (authLoading || stats.loading) {
@@ -383,7 +366,7 @@ const Dashboard = () => {
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
           <StatCard
             icon={FileText}
-            label="Your Posts"
+            label="Campus Posts"
             value={stats.postsCount}
             color="bg-blue-500"
           />

@@ -7,6 +7,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  base: '/CampusConnectApp/',
   build: {
     outDir: 'dist',
     sourcemap: true,

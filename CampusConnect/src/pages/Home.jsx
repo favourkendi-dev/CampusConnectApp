@@ -86,7 +86,7 @@ const useStudyTip = () => {
         const tipsRef = collection(db, 'studyTips');
         const snapshot = await getDocs(tipsRef);
         if (!snapshot.empty) {
-          const tips = snapshot.docs.map(d => d.data().text);
+          const tips = snapshot.docs.map(d => d.data().content);
           const random = tips[Math.floor(Math.random() * tips.length)];
           setTip(random);
         }
@@ -110,7 +110,7 @@ const useTrending = () => {
   useEffect(() => {
     const q = query(
       collection(db, 'posts'),
-      orderBy('createdAt', 'desc'),
+      orderBy('CreatedAt', 'desc'),
       limit(100)
     );
 
@@ -168,6 +168,30 @@ const useUserHeartbeat = (userId) => {
   }, [userId]);
 };
 
+const useCampusUsers = () => {
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    const q = query(collection(db, 'users'), limit(10));
+
+    const unsub = onSnapshot(q, (snapshot) => {
+      const items = snapshot.docs.map((d) => ({
+        id: d.id,
+        displayName: d.data().displayName || 'Student',
+        photoURL: d.data().photoURL || `https://ui-avatars.com/api/?name=${d.data().displayName || 'Student'}&background=random`,
+      }));
+      setUsers(items);
+    }, (err) => {
+      console.error('CampusUsers error:', err);
+      setUsers([]);
+    });
+
+    return unsub;
+  }, []);
+
+  return users;
+};
+
 // ===== COMPONENT =====
 
 const Home = () => {
@@ -182,6 +206,7 @@ const Home = () => {
   const { pulse: campusPulse, loading: pulseLoading, vote: votePulse } = useCampusPulse();
   const { tip: studyTip, loading: tipLoading } = useStudyTip();
   const trendingTopics = useTrending();
+  const campusUsers = useCampusUsers();
 
   // Heartbeat for online status
   useUserHeartbeat(user?.uid);
@@ -351,7 +376,7 @@ const Home = () => {
               </div>
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div className="p-2 bg-slate-50 rounded-xl">
-                  <div className="text-lg font-bold text-primary-600">{posts.filter(p => p.userId === user?.uid).length}</div>
+                  <div className="text-lg font-bold text-primary-600">{posts.filter(p => p.authorId === user?.uid).length}</div>
                   <div className="text-[10px] text-slate-500 uppercase tracking-wide">Posts</div>
                 </div>
                 <div className="p-2 bg-slate-50 rounded-xl">
@@ -430,18 +455,18 @@ const Home = () => {
                   </div>
                   <span className="text-xs text-slate-600">Your Story</span>
                 </button>
-                {['Alice', 'Bob', 'Charlie', 'Diana', 'Eve'].map((name, i) => (
-                  <button key={name} className="flex-shrink-0 flex flex-col items-center gap-1.5 group">
+                {campusUsers.filter(u => u.id !== user?.uid).map((campusUser, i) => (
+                  <button key={campusUser.id} className="flex-shrink-0 flex flex-col items-center gap-1.5 group">
                     <div className={`w-16 h-16 rounded-full p-[2px] ${i % 2 === 0 ? 'bg-gradient-to-br from-purple-500 to-pink-500' : 'bg-slate-200'}`}>
                       <div className="w-full h-full rounded-full bg-white p-[2px]">
                         <img
-                          src={`https://ui-avatars.com/api/?name=${name}&background=random`}
-                          alt={name}
+                          src={campusUser.photoURL}
+                          alt={campusUser.displayName}
                           className="w-full h-full rounded-full object-cover"
                         />
                       </div>
                     </div>
-                    <span className="text-xs text-slate-600">{name}</span>
+                    <span className="text-xs text-slate-600">{campusUser.displayName?.split(' ')[0] || 'Student'}</span>
                   </button>
                 ))}
               </div>
