@@ -1,6 +1,6 @@
 import { useRef } from 'react';
-import { Cloudinary } from '@cloudinary/url-gen';
-import { AdvancedImage } from '@cloudinary/react';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '../../firebase/config';
 
 export const ImageUpload = ({ children, onUpload, onUploadStart, onUploadEnd }) => {
   const inputRef = useRef(null);
@@ -16,26 +16,17 @@ export const ImageUpload = ({ children, onUpload, onUploadStart, onUploadEnd }) 
     onUploadStart?.();
     
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
+      // Create a unique filename with timestamp
+      const fileName = `${Date.now()}_${file.name}`;
+      const storageRef = ref(storage, `posts/${fileName}`);
 
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
-        {
-          method: 'POST',
-          body: formData,
-        }
-      );
+      // Upload file to Firebase Storage
+      await uploadBytes(storageRef, file);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || 'Upload failed');
-      }
+      // Get the public download URL
+      const downloadURL = await getDownloadURL(storageRef);
 
-      const data = await response.json();
-      // data.secure_url is the full path, data.public_id is the unique ID
-      onUpload?.(data.secure_url);
+      onUpload?.(downloadURL);
     } catch (error) {
       console.error('Error uploading image:', error);
       alert(`Upload failed: ${error.message}`);
@@ -60,26 +51,13 @@ export const ImageUpload = ({ children, onUpload, onUploadStart, onUploadEnd }) 
 };
 
 export const CloudinaryImage = ({ publicId, alt, className }) => {
-  // If we receive a full URL instead of just a publicId, we shouldn't use AdvancedImage
+  // If we receive a full URL, just use it directly
   if (publicId?.startsWith('http')) {
     return <img src={publicId} alt={alt} className={className} />;
   }
 
-  const cld = new Cloudinary({
-    cloud: {
-      cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
-    },
-  });
-
-  const img = cld.image(publicId);
-  
-  return (
-    <AdvancedImage
-      cldImg={img}
-      alt={alt}
-      className={className}
-    />
-  );
+  // Fallback for any non-URL publicId
+  return <img src={publicId} alt={alt} className={className} />;
 };
 
 export default ImageUpload;
